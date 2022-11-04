@@ -194,7 +194,7 @@ defundd status 2>&1 | jq .NodeInfo
 ```
 ### Check node logs
 ```bash
-defundd journalctl -u haqqd -f -o cat
+journalctl -u defundd -f -o cat
 ```
 ### Check Balance
 ```bash
