@@ -200,3 +200,99 @@ journalctl -u defundd -f -o cat
 ```bash
 defundd query bank balances defund...addressdefund1yjgn7z09ua9vms259j
 ```
+
+### проверить блоки
+```
+defundd status 2>&1 | jq ."SyncInfo"."latest_block_height"
+```
+### проверить логи
+```
+journalctl -u defundd -f -o cat
+```
+```
+journalctl -u defundd -f -o cat | grep -v "p2p"
+```
+### проверить статус
+```
+curl localhost:26657/status
+```
+### проверить баланс
+```
+defundd q bank balances <address>
+```
+### проверить pubkey валидатора
+defundd tendermint show-validator
+
+### проверить валидатора
+```
+defundd query staking validator <valoper_address>
+```
+```
+defundd query staking validators --limit 1000000 -o json | jq '.validators[] | select(.description.moniker=="<name_moniker>")' | jq
+```
+### проверка информации по TX_HASH
+```
+defundd query tx <TX_HASH>
+```
+### параметры сети
+```
+defundd q staking params
+```
+```
+defundd q slashing params
+```
+### проверить сколько блоков пропущено валидатором и с какого блока актив
+```
+defundd q slashing signing-info $(defundd tendermint show-validator)
+```
+### узнать транзакцию создания валидатора (заменить свой valoper_address)
+```
+defundd query txs --events='create_validator.validator=<your_valoper_address>' -o=json | jq .txs[0].txhash -r
+```
+### просмотр активного сета
+```
+defundd q staking validators -o json --limit=1000 \
+| jq '.validators[] | select(.status=="BOND_STATUS_BONDED")' \
+| jq -r '.tokens + " - " + .description.moniker' \
+| sort -gr | nl
+```
+### просмотр неактивного сета
+```
+defundd q staking validators -o json --limit=1000 \
+| jq '.validators[] | select(.status=="BOND_STATUS_UNBONDED")' \
+| jq -r '.tokens + " - " + .description.moniker' \
+| sort -gr | nl
+```
+
+## Транзакции
+
+### собрать реварды со всех валидаторов, которым делегировали (без комиссии)
+```
+defundd tx distribution withdraw-all-rewards --from <name_wallet> --fees 5000ufetf -y
+```
+### собрать реварды c отдельного валидатора или реварды + комиссию со своего валидатора
+```
+defundd tx distribution withdraw-rewards <valoper_address> --from <name_wallet> --fees 5000ufetf --commission -y
+```
+### заделегировать себе в стейк еще (так отправляется 1 монетa)
+```
+defundd tx staking delegate <valoper_address> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+```
+### ределегирование на другого валидатора
+```
+defundd tx staking redelegate <src-validator-addr> <dst-validator-addr> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+```
+
+### unbond 
+```
+defundd tx staking unbond <addr_valoper> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+```
+### отправить монеты на другой адрес
+```
+defundd tx bank send <name_wallet> <address> 1000000ufetf --fees 5000ufetf -y
+```
+
+### выбраться из тюрьмы
+```
+defundd tx slashing unjail --from <name_wallet> --fees 5000ufetf -y
+```
