@@ -1,7 +1,7 @@
 # defunder-gaid
 Установка ноды DeFunder с нуля. Пошаговое руководство.
 
-# DeFund Testnet guide
+# DeFund Testnet УСТАНОВКА (ЧИСТАЯ)
 
 ![defund](https://user-images.githubusercontent.com/44331529/198265844-d3d66bd2-78cf-4c14-8320-12a00f2aafe0.png)
 
@@ -11,21 +11,21 @@
 [EXPLORER](https://defund.explorers.guru/validators)
 =
 
-- **Minimum hardware requirements**:
+- **Требования**:
 
 | Node Type |CPU | RAM  | Storage  | 
 |-----------|----|------|----------|
 | Tetsnet   |   4|  8GB | 250GB    |
 
 
-# 1) Auto_install script
+# 1) Автоустановка script (после него останется должаться синхрона и создать валидатора) Используйте навигацию в скрипте.
 ```bash
 wget -O dfn https://raw.githubusercontent.com/obajay/nodes-Guides/main/DeFund/dfn && chmod +x dfn && ./dfn
 ```
 
-# 2) Manual installation
+# 2) Manual installation (если вы используете установку скриптом пропускайте 2 шаг и продолжайте с 3 шага - создание валидатора)
 
-### Preparing the server
+
 
 ```bash
 sudo apt update && sudo apt upgrade -y
@@ -60,13 +60,15 @@ defundd init STAVRguide --chain-id defund-private-2
 
 ```    
 
-## Create/recover wallet
+## Создать/восстановить wallet (или или)
 ```bash
 defundd keys add <walletname>
+``
+``
 defundd keys add <walletname> --recover
 ```
 
-## Download Genesis
+## Загрузить  Genesis
 ```bash
 wget -O $HOME/.defund/config/genesis.json "https://raw.githubusercontent.com/defund-labs/testnet/main/defund-private-2/genesis.json"
 ```
@@ -87,7 +89,7 @@ sed -i 's/max_num_inbound_peers =.*/max_num_inbound_peers = 100/g' $HOME/.defund
 sed -i 's/max_num_outbound_peers =.*/max_num_outbound_peers = 100/g' $HOME/.defund/config/config.toml
 
 ```
-### Pruning (optional)
+### Pruning (по желанию)
 ```bash
 pruning="custom"
 pruning_keep_recent="100"
@@ -98,13 +100,13 @@ sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$pruning_keep_rec
 sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$pruning_keep_every\"/" $HOME/.defund/config/app.toml
 sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" $HOME/.defund/config/app.toml
 ```
-### Indexer (optional) 
+### Indexer (по желанию) 
 ```bash
 indexer="null" && \
 sed -i -e "s/^indexer *=.*/indexer = \"$indexer\"/" $HOME/.defund/config/config.toml
 ```
 
-## Download addrbook
+## Загрузить ADDBOOK
 ```bash
 wget -O $HOME/.defund/config/addrbook.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/DeFund/addrbook.json"
 ```
@@ -128,7 +130,7 @@ defundd tendermint unsafe-reset-all --home $HOME/.defund
 systemctl restart defundd && journalctl -u defundd -f -o cat
 ```
 
-# Create a service file
+# Создать сервисный файл
 ```bash
 sudo tee /etc/systemd/system/defundd.service > /dev/null <<EOF
 [Unit]
@@ -147,31 +149,31 @@ WantedBy=multi-user.target
 EOF
 ```
 
-## Start
+## Запуск
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable defundd
 sudo systemctl restart defundd && sudo journalctl -u defundd -f -o cat
 ```
-
-### Create validator
+# 3)
+### Создание валидатора
 ```bash
 defundd tx staking create-validator \
   --amount 1000000ufetf \
-  --from <walletName> \
+  --from <имякошелька> \
   --commission-max-change-rate "0.1" \
   --commission-max-rate "0.2" \
   --commission-rate "0.1" \
   --min-self-delegation "1" \
   --pubkey  $(defundd tendermint show-validator) \
-  --moniker STAVRguide \
-  --chain-id defund-private-2 \
+  --moniker <имяноды> \
+  --chain-id defund-private-3 \
   --identity="" \
   --details="" \
   --website="" -y
 ```
 
-## Delete node
+## Удалить ноду
 ```bash
 sudo systemctl stop defundd && \
 sudo systemctl disable defundd && \
@@ -225,7 +227,7 @@ defundd tendermint show-validator
 
 ### проверить валидатора
 ```
-defundd query staking validator <valoper_address>
+defundd query staking validator <адресвалидатора>
 ```
 ```
 defundd query staking validators --limit 1000000 -o json | jq '.validators[] | select(.description.moniker=="<name_moniker>")' | jq
@@ -268,31 +270,31 @@ defundd q staking validators -o json --limit=1000 \
 
 ### собрать реварды со всех валидаторов, которым делегировали (без комиссии)
 ```
-defundd tx distribution withdraw-all-rewards --from <name_wallet> --fees 5000ufetf -y
+defundd tx distribution withdraw-all-rewards --from <имякошелька> --fees 5000ufetf -y
 ```
 ### собрать реварды c отдельного валидатора или реварды + комиссию со своего валидатора
 ```
-defundd tx distribution withdraw-rewards <valoper_address> --from <name_wallet> --fees 5000ufetf --commission -y
+defundd tx distribution withdraw-rewards <адресвалидатора> --from <тмякошелька> --fees 5000ufetf --commission -y --chain-id defund-private-3
 ```
 ### заделегировать себе в стейк еще (так отправляется 1 монетa)
 ```
-defundd tx staking delegate <valoper_address> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+defundd tx staking delegate <адрес валидатора> 1000000ufetf --from <имя кошелька> --fees 5000ufetf -y --chain-id defund-private-3
 ```
 ### ределегирование на другого валидатора
 ```
-defundd tx staking redelegate <src-validator-addr> <dst-validator-addr> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+defundd tx staking redelegate <откуда-validator-addr> <куда-validator-addr> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y --chain-id defund-private-3
 ```
 
-### unbond 
+### Unbond
 ```
-defundd tx staking unbond <addr_valoper> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y
+defundd tx staking unbond <addr_valoper> 1000000ufetf --from <name_wallet> --fees 5000ufetf -y --chain-id defund-private-3
 ```
 ### отправить монеты на другой адрес
 ```
-defundd tx bank send <name_wallet> <address> 1000000ufetf --fees 5000ufetf -y
+defundd tx bank send <name_wallet> <address> 1000000ufetf --fees 5000ufetf -y --chain-id defund-private-3
 ```
 
 ### выбраться из тюрьмы
 ```
-defundd tx slashing unjail --from <name_wallet> --fees 5000ufetf -y
+defundd tx slashing unjail --from <name_wallet> --fees 5000ufetf -y --chain-id defund-private-3
 ```
