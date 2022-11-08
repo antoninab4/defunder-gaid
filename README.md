@@ -63,8 +63,8 @@ defundd init STAVRguide --chain-id defund-private-2
 ## Создать/восстановить wallet (или или)
 ```bash
 defundd keys add <walletname>
-``
-``
+```
+```
 defundd keys add <walletname> --recover
 ```
 
