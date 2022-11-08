@@ -56,7 +56,7 @@ make install
 - version: v0.1.0
 
 ```bash
-defundd init STAVRguide --chain-id defund-private-2
+defundd init STAVRguide --chain-id defund-private-3
 
 ```    
 
@@ -70,7 +70,7 @@ defundd keys add <walletname> --recover
 
 ## Загрузить  Genesis
 ```bash
-wget -O $HOME/.defund/config/genesis.json "https://raw.githubusercontent.com/defund-labs/testnet/main/defund-private-2/genesis.json"
+wget -O $HOME/.defund/config/genesis.json "https://raw.githubusercontent.com/defund-labs/testnet/main/defund-private-3/genesis.json"
 ```
 `sha256sum $HOME/.defund/config/genesis.json`
 + bec32034b1ca130e2f45c603f42103490df990984fb46528994b4a99a5f77ea6
